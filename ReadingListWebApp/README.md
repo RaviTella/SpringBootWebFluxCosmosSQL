@@ -15,9 +15,9 @@ Specifically, the following capabilities are demonstrated:
 ## First:
  * Java 8
  * maven
- * Create a Cosmos DB SQL API collection named "ReadingList". use /reader as the "Partition Key"
+ * Create a Cosmos DB SQL API Account. 
 
 ## Then:
-* Update the database connection information in application.properties 
+* Update the database connection information in application.properties along with a database name and container name of your choice
 * mvn spring-boot:run 
 * Access the WebApp at http://localhost:8080/readingList
