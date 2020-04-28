@@ -5,7 +5,6 @@ A Sample application built with Spring Boot 2 on Spring WebFlux stack, integrate
 Specifically, the following capabilities are demonstrated:
 * Spring Boot 2 on WebFlux - Functional Routing, thymeleaf templates, Dependency Injection etc
 * Netty HTTP server backend
-* Calling REST APIs with WebClient
 * Java SDK 4.0
 * Spring Reactor 
 * Cosmos DB SQL API
