@@ -1,6 +1,6 @@
 package com.ratella.ReactiveReadingListWebApp.controller;
 
-import com.google.common.collect.Lists;
+
 import com.ratella.ReactiveReadingListWebApp.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,9 @@ public class ReadingListController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public Mono<String> addToReadingList(Book book) {
         book.setReader("Tella");
-        book.setId(UUID.randomUUID().toString());
+        book.setId(UUID
+                .randomUUID()
+                .toString());
         logger.info("Adding a book -> " + book);
         return cosmosRepository
                 .createBook(book)
@@ -58,8 +60,8 @@ public class ReadingListController {
     public Mono<String> deleteFromReadingList(@PathVariable String id) {
         logger.info("Deleting a book with ID -> " + id);
         return cosmosRepository
-                .deleteBookByID(id,"Tella")
-                .map(cosmosAsyncItemResponse -> {
+                .deleteBookByID(id, "Tella")
+                .map(response -> {
                     return "redirect:/readingList";
                 });
     }
@@ -68,7 +70,7 @@ public class ReadingListController {
     public Mono<String> editReadingListView(@PathVariable String id, Model model) {
         logger.info("Finding a book with ID -> " + id);
         return cosmosRepository
-                .findBookByID(id,"Tella")
+                .findBookByID(id, "Tella")
                 .map(book -> {
                     model.addAttribute("book", book);
                     return "editReadingList";
@@ -80,7 +82,7 @@ public class ReadingListController {
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
     public Mono<String> editReadingListItem(Book updatedBook) {
         return cosmosRepository
-                .findBookByID(updatedBook.getId(),"Tella")
+                .findBookByID(updatedBook.getId(), "Tella")
                 .map(
                         currentBook -> {
                             currentBook.setTitle(updatedBook.getTitle());

@@ -2,7 +2,8 @@ package com.ratella.ReactiveReadingListWebApp.model;
 
 import com.azure.cosmos.*;
 import com.azure.cosmos.models.*;
-import com.google.common.collect.Lists;
+import com.azure.cosmos.util.CosmosPagedFlux;
+import com.sun.xml.internal.bind.v2.TODO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,8 +35,8 @@ public class CosmosRepository {
 
 
     public Flux<Book> getReadingList(String reader) {
-        FeedOptions queryOptions = new FeedOptions();
-        queryOptions.setMaxItemCount(10);
+        CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
+        queryOptions.setMaxBufferedItemCount(10);
         String query = "SELECT * FROM ReadingList r WHERE r.reader = " + "'" + reader + "'";
         CosmosPagedFlux<Book> pagedFluxResponse = container.queryItems(
                 query, queryOptions, Book.class);
@@ -47,39 +48,49 @@ public class CosmosRepository {
     public Mono<Book> createBook(Book book) {
         return container
                 .createItem(book)
-                .map(CosmosAsyncItemResponse::getItem);
+                .map(cosmosItemResponse -> {
+                    return cosmosItemResponse.getItem();
+                });
+
     }
 
     public Mono<Book> updateBook(Book book) {
         return container
                 .replaceItem(book, book.getId(), new PartitionKey(book.getReader()))
-                .map(CosmosAsyncItemResponse::getItem);
+                .map(CosmosItemResponse::getItem);
     }
 
     public Mono<Book> findBookByID(String id, String partitionKey) {
         return container
                 .readItem(id, new PartitionKey(partitionKey), Book.class)
-                .map(CosmosAsyncItemResponse::getItem);
+                .map(CosmosItemResponse::getItem);
     }
 
-    public Mono<CosmosAsyncItemResponse> deleteBookByID(String id, String partitionKey) {
-        return container.deleteItem(id, new PartitionKey(partitionKey));
-        // TODO: 3/20/2020  Why is map throwing nullpointer exception?
-        // .map(CosmosAsyncItemResponse::getItem);//.log();
+    public Mono<CosmosItemResponse<Object>> deleteBookByID(String id, String partitionKey) {
+        return container
+                .deleteItem(id, new PartitionKey(partitionKey));
+        //TODO Why is getItem() returning null?
+        // .map(CosmosAsyncItemResponse::getItem);
+
     }
 
 
     @PostConstruct
     private void cosmosSetup() {
         CosmosContainerProperties containerProperties = new CosmosContainerProperties(containerName, "/reader");
-        Flux
-                .from(Mono.just(getClient()))
-                .flatMap(n -> n.createDatabaseIfNotExists(databaseName))
-                .flatMap(databaseResponse -> databaseResponse
-                        .getDatabase()
-                        .createContainerIfNotExists(containerProperties, 400))
+        getClient()
+                .createDatabaseIfNotExists(databaseName)
+                .flatMap(databaseResponse -> {
+                    database = getClient().getDatabase(databaseResponse
+                            .getProperties()
+                            .getId());
+                    return database
+                            .createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(400));
+                })
                 .flatMap(containerResponse -> {
-                    container = containerResponse.getContainer();
+                    container = database.getContainer(containerResponse
+                            .getProperties()
+                            .getId());
                     return Mono.empty();
                 })
                 .subscribeOn(Schedulers.elastic())
@@ -89,18 +100,18 @@ public class CosmosRepository {
 
     private CosmosAsyncClient getClient() {
         if (client == null) {
-            ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
-            defaultPolicy.setPreferredLocations(locations);
             logger.info(endpoint);
             client = new CosmosClientBuilder()
-                    .setEndpoint(endpoint)
-                    .setKey(key)
-                    .setConnectionPolicy(defaultPolicy)
-                    .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+                    .endpoint(endpoint)
+                    .key(key)
+                    .preferredRegions(locations)
+                    .contentResponseOnWriteEnabled(true)
+                    .consistencyLevel(ConsistencyLevel.SESSION)
                     .buildAsyncClient();
             return client;
         }
         return client;
+
     }
 
 
