@@ -5,7 +5,6 @@ A Sample application built with Spring Boot 2 on Spring WebFlux stack, integrate
 Specifically, the following capabilities are demonstrated:
 * Spring Boot 2 on WebFlux - Functional Routing, thymeleaf templates, Dependency Injection etc
 * Netty HTTP server backend
-* Calling REST APIs with WebClient
 * Java SDK 4.0
 * Spring Reactor 
 * Cosmos DB SQL API
@@ -15,9 +14,9 @@ Specifically, the following capabilities are demonstrated:
 ## First:
  * Java 8
  * maven
- * Create a Cosmos DB SQL API collection named "ReadingList". use /reader as the "Partition Key"
+ * Create a Cosmos DB SQL API Account. 
 
 ## Then:
-* Update the database connection information in application.properties 
+* Update the database connection information in application.properties along with a database name and container name of your choice
 * mvn spring-boot:run 
 * Access the WebApp at http://localhost:8080/readingList
