@@ -38,19 +38,17 @@ public class CosmosRepository {
                 .flatMap(page -> Flux.fromIterable(page.getElements()));
     }
 
-    public Mono<Book> createBook(Book book) {
+    public Mono<Integer> createBook(Book book) {
         return cosmosDB.getContainer()
                 .createItem(book)
-                .map(cosmosItemResponse -> {
-                    return cosmosItemResponse.getItem();
-                });
+                .map(CosmosItemResponse::getStatusCode);
 
     }
 
-    public Mono<Book> updateBook(Book book) {
+    public Mono<Integer> updateBook(Book book) {
         return cosmosDB.getContainer()
                 .replaceItem(book, book.getId(), new PartitionKey(book.getReader()))
-                .map(CosmosItemResponse::getItem);
+                .map(CosmosItemResponse::getStatusCode);
     }
 
     public Mono<Book> findBookByID(String id, String partitionKey) {
@@ -59,12 +57,10 @@ public class CosmosRepository {
                 .map(CosmosItemResponse::getItem);
     }
 
-    public Mono<CosmosItemResponse<Object>> deleteBookByID(String id, String partitionKey) {
+    public Mono<Integer> deleteBookByID(String id, String partitionKey) {
         return cosmosDB.getContainer()
-                .deleteItem(id, new PartitionKey(partitionKey));
-        //TODO Why is getItem() returning null?
-        // .map(CosmosAsyncItemResponse::getItem);
-
+                .deleteItem(id, new PartitionKey(partitionKey))
+                .map(CosmosItemResponse::getStatusCode);
     }
 
 }

@@ -68,7 +68,6 @@ public class CosmosDB {
                     .endpoint(endpoint)
                     .key(key)
                     .preferredRegions(locations)
-                    .contentResponseOnWriteEnabled(true)
                     .consistencyLevel(ConsistencyLevel.SESSION)
                     .buildAsyncClient();
             return client;

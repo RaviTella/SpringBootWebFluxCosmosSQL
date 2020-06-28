@@ -51,7 +51,7 @@ public class ReadingListController {
         logger.info("Adding a book -> " + book);
         return cosmosRepository
                 .createBook(book)
-                .map(b -> {
+                .map(responseStatusCode -> {
                     return "redirect:/readingList";
                 });
     }
@@ -61,7 +61,7 @@ public class ReadingListController {
         logger.info("Deleting a book with ID -> " + id);
         return cosmosRepository
                 .deleteBookByID(id, "Tella")
-                .map(response -> {
+                .map(responseStatusCode -> {
                     return "redirect:/readingList";
                 });
     }
@@ -95,7 +95,7 @@ public class ReadingListController {
                     logger.info("Updating a book -> " + currentBook.toString());
                     return cosmosRepository.updateBook(currentBook);
                 })
-                .map(currentBook -> {
+                .map(responseStatusCode -> {
                     return "redirect:/readingList";
                 });
 
